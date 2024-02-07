@@ -8,11 +8,11 @@ export async function fetchRevenue() {
   noStore();
 
   console.log('Fetching revenue data...');
-  await new Promise((resolve) => setTimeout(resolve, 6000));
+  // await new Promise((resolve) => setTimeout(resolve, 6000));
 
   const data = await prisma.revenue.findMany();
 
-  console.log('Data fetch completed after 3 seconds.');
+  // console.log('Data fetch completed after 3 seconds.');
 
   return data;
 }
@@ -20,7 +20,7 @@ export async function fetchRevenue() {
 export async function fetchLatestInvoices() {
   try {
     noStore();
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const data = await prisma.$queryRaw<
       LatestInvoiceRaw[]

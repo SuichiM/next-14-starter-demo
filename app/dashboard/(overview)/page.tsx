@@ -33,3 +33,5 @@ export default async function Page() {
     </main>
   );
 }
+
+export const dynamic = 'force-dynamic';
