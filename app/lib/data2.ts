@@ -1,13 +1,13 @@
 import prisma from '@/app/lib/db';
 import { formatCurrency } from './utils';
-import { InvoicesTable, LatestInvoiceRaw } from './definitions';
+import { CustomerField, InvoiceForm, InvoicesTable, LatestInvoiceRaw } from './definitions';
 
 import { unstable_noStore as noStore } from 'next/cache';
 
 export async function fetchRevenue() {
   noStore();
 
-  console.log('Fetching revenue data...');
+ //  console.log('Fetching revenue data...');
   // await new Promise((resolve) => setTimeout(resolve, 6000));
 
   const data = await prisma.revenue.findMany();
@@ -146,5 +146,43 @@ export async function fetchInvoicesPages(query: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch total number of invoices.');
+  }
+}
+
+
+export async function fetchCustomers() {
+  noStore();
+  try {
+    const data = await prisma.$queryRaw<CustomerField[]>`
+      SELECT
+        id,
+        name
+      FROM customers
+      ORDER BY name ASC
+    `;
+
+    const customers = data;
+    return customers;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all customers.');
+  }
+}
+
+export async function fetchInvoiceById(invoiceId: string) {
+  noStore();
+  
+  try {
+    const {id, customer_id, amount, status } = await prisma.invoices.findFirstOrThrow({where:{id:invoiceId}});
+
+    return {
+      id,
+      customer_id,
+      amount: amount / 100,
+      status
+    } as InvoiceForm;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoice.');
   }
 }
