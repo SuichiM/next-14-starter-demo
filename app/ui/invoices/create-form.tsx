@@ -18,7 +18,14 @@ import { createInvoice } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
-  const initialState = { message: null, errors: {}, prevState: {} };
+  const initialState = {
+    message: null,
+    errors: {},
+    prevState: {
+      customerId: '',
+      status: 'pending',
+    },
+  };
 
   const [state, dispatch] = useFormState(createInvoice, initialState);
 
@@ -104,7 +111,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                   name="status"
                   type="radio"
                   value="pending"
-                  checked={state?.prevState?.status === 'pending'}
+                  defaultChecked={state?.prevState?.status === 'pending'}
                   aria-describedby="status-error"
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                 />
@@ -121,7 +128,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
                   name="status"
                   type="radio"
                   value="paid"
-                  checked={state?.prevState?.status === 'paid'}
+                  defaultChecked={state?.prevState?.status === 'paid'}
                   aria-describedby="status-error"
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                 />
