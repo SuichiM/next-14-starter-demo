@@ -1,13 +1,21 @@
 import prisma from '@/app/lib/db';
 import { formatCurrency } from './utils';
-import { CustomerField, InvoiceForm, InvoicesTable, LatestInvoiceRaw } from './definitions';
+import {
+  CustomerField,
+  InvoiceForm,
+  InvoicesTable,
+  LatestInvoiceRaw,
+} from './definitions';
 
 import { unstable_noStore as noStore } from 'next/cache';
+
+import { notFound } from 'next/navigation';
+import { Prisma } from '@prisma/client';
 
 export async function fetchRevenue() {
   noStore();
 
- //  console.log('Fetching revenue data...');
+  //  console.log('Fetching revenue data...');
   // await new Promise((resolve) => setTimeout(resolve, 6000));
 
   const data = await prisma.revenue.findMany();
@@ -149,7 +157,6 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
-
 export async function fetchCustomers() {
   noStore();
   try {
@@ -171,18 +178,26 @@ export async function fetchCustomers() {
 
 export async function fetchInvoiceById(invoiceId: string) {
   noStore();
-  
+
   try {
-    const {id, customer_id, amount, status } = await prisma.invoices.findFirstOrThrow({where:{id:invoiceId}});
+    // validate invoiceID is a valid UUID
+
+    const { id, customer_id, amount, status } =
+      await prisma.invoices.findFirstOrThrow({ where: { id: invoiceId } });
 
     return {
       id,
       customer_id,
       amount: amount / 100,
-      status
+      status,
     } as InvoiceForm;
   } catch (error) {
-    console.error('Database Error:', error);
+    // check if the error if of type PrismaClientKnownRequestError
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error('Database Error:', error.message);
+      if (error.code === 'P2025') return notFound();
+    }
+
     throw new Error('Failed to fetch invoice.');
   }
 }
