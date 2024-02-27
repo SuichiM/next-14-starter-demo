@@ -1,5 +1,7 @@
 import AcmeLogo from '@/app/ui/acme-logo';
+import Divider from '@/app/ui/divider';
 import LoginForm from '@/app/ui/login-form';
+import { GithubSignIn } from '@/app/ui/github-sign-in';
 
 export default function LoginPage() {
   return (
@@ -11,6 +13,10 @@ export default function LoginPage() {
           </div>
         </div>
         <LoginForm />
+        {/* or divider */}
+        <Divider>or</Divider>
+        {/* login with github */}
+        <GithubSignIn />
       </div>
     </main>
   );

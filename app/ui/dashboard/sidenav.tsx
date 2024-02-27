@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import NavLinks from '@/app/ui/dashboard/nav-links';
+import UserWidget from '@/app/ui/dashboard/user-widget';
 import AcmeLogo from '@/app/ui/acme-logo';
 import { PowerIcon } from '@heroicons/react/24/outline';
-import { signOut } from '@/auth';
+import { auth, signOut } from '@/app/utils/auth';
 
-export default function SideNav() {
+export default async function SideNav() {
+  /* get user data from session */
+  const session = await auth();
+  // console.log(user);
+
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2">
       <Link
@@ -29,6 +34,7 @@ export default function SideNav() {
             <div className="hidden md:block">Sign Out</div>
           </button>
         </form>
+        {session?.user && <UserWidget user={session.user} />}
       </div>
     </div>
   );

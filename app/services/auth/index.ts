@@ -1,4 +1,6 @@
-import { signIn } from '@/auth';
+'use server';
+
+import { signIn } from '@/app/utils/auth';
 import { AuthError } from 'next-auth';
 
 import prisma from '@/app/lib/db';
