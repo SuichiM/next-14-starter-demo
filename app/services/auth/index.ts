@@ -31,7 +31,7 @@ export async function authenticate(
 
 export async function getUser(email: string): Promise<User | undefined> {
   try {
-    const user = await prisma.users.findFirstOrThrow({
+    const user = await prisma.user.findFirstOrThrow({
       where: {
         email,
       },

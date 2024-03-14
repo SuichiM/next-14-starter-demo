@@ -6,7 +6,9 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  password: string;
+  password: string | null;
+  emailVerified: Date | null;
+  image: string | null;
 };
 
 export type Customer = {
