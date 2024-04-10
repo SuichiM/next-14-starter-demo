@@ -2,10 +2,10 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
-import { fetchLatestInvoices } from '@/app/lib/data2';
+import { fetchLatest } from '@/app/services/invoices';
 
 export default async function LatestInvoices() {
-  const latestInvoices = await fetchLatestInvoices();
+  const latestInvoices = await fetchLatest();
 
   return (
     <div className="flex w-full flex-col md:col-span-4">
@@ -52,6 +52,13 @@ export default async function LatestInvoices() {
               </div>
             );
           })}
+
+          {/* button load more */}
+          {/*  <div className="mt-4 flex justify-center">
+            <button className="text-blue-500" onClick={handleLoadMore}>
+              Load more
+            </button>
+          </div> */}
         </div>
         <div className="flex items-center pb-2 pt-6">
           <ArrowPathIcon className="h-5 w-5 text-gray-500" />

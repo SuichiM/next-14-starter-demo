@@ -1,34 +1,20 @@
 import prisma from '@/app/lib/db';
-import { formatCurrency } from './utils';
-import {
-  CustomerField,
-  InvoiceForm,
-  InvoicesTable,
+import { formatCurrency } from '@/app/lib/utils';
+import type {
   LatestInvoiceRaw,
-} from './definitions';
+  LatestInvoice,
+  InvoicesTable,
+  InvoiceForm,
+} from '@/app/lib/definitions';
 
 import { unstable_noStore as noStore } from 'next/cache';
 
 import { notFound } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 
-export async function fetchRevenue() {
-  noStore();
-
-  //  console.log('Fetching revenue data...');
-  // await new Promise((resolve) => setTimeout(resolve, 6000));
-
-  const data = await prisma.revenue.findMany();
-
-  // console.log('Data fetch completed after 3 seconds.');
-
-  return data;
-}
-
 export async function fetchLatestInvoices() {
   try {
     noStore();
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const data = await prisma.$queryRaw<
       LatestInvoiceRaw[]
@@ -49,50 +35,50 @@ export async function fetchLatestInvoices() {
   }
 }
 
-export async function fetchCardData() {
+type paramsType = {
+  page?: number;
+  size?: number;
+};
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 5;
+export async function fetchLatest(
+  params?: paramsType,
+): Promise<LatestInvoice[]> {
+  noStore();
+
+  const { page = DEFAULT_PAGE, size = DEFAULT_PAGE_SIZE } = params || {};
+  const skip = page * size - size;
+
   try {
-    noStore();
+    const invoices = await prisma.invoices.findMany({
+      take: size,
+      skip,
+      orderBy: {
+        date: 'desc',
+      },
+      include: {
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            image_url: true,
+          },
+        },
+      },
+    });
 
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = prisma.$queryRaw<
-      { count: BigInt }[]
-    >`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = prisma.$queryRaw<
-      { count: BigInt }[]
-    >`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = prisma.$queryRaw<
-      { paid: BigInt; pending: BigInt }[]
-    >`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
-
-    const [invoiceCount, customerCount, invoicesCount] = await Promise.all([
-      invoiceCountPromise,
-      customerCountPromise,
-      invoiceStatusPromise,
-    ]);
-
-    const numberOfInvoices = Number(invoiceCount[0].count ?? '0');
-    const numberOfCustomers = Number(customerCount[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(
-      Number(invoicesCount[0].paid) ?? '0',
-    );
-    const totalPendingInvoices = formatCurrency(
-      Number(invoicesCount[0].pending) ?? '0',
-    );
-
-    return {
-      numberOfCustomers,
-      numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
-    };
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch card data.');
+    return invoices.map(({ id, amount, status, customer }) => ({
+      id,
+      amount: formatCurrency(amount),
+      status,
+      name: customer.name,
+      email: customer.email,
+      image_url: customer.image_url,
+    }));
+  } catch (e) {
+    console.log(e);
+    throw new Error('Failed to fetch the latest invoices.');
   }
 }
 
@@ -154,25 +140,6 @@ export async function fetchInvoicesPages(query: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch total number of invoices.');
-  }
-}
-
-export async function fetchCustomers() {
-  noStore();
-  try {
-    const data = await prisma.$queryRaw<CustomerField[]>`
-      SELECT
-        id,
-        name
-      FROM customers
-      ORDER BY name ASC
-    `;
-
-    const customers = data;
-    return customers;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch all customers.');
   }
 }
 
